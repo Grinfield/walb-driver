@@ -3214,10 +3214,10 @@ static void io_acct_start(struct bio_wrapper *biow)
 	biow->start_time = jiffies;
 
 	cpu = part_stat_lock();
-	part_round_stats(cpu, part0);
+	part_round_stats(bdev_get_queue(biow->bio->bi_bdev), cpu, part0);
 	part_stat_inc(cpu, part0, ios[rw]);
 	part_stat_add(cpu, part0, sectors[rw], biow->len);
-	part_inc_in_flight(part0, rw);
+	part_inc_in_flight(bdev_get_queue(biow->bio->bi_bdev), part0, rw);
 	part_stat_unlock();
 
 #ifdef WALB_DEBUG
@@ -3236,8 +3236,8 @@ static void io_acct_end(struct bio_wrapper *biow)
 
 	cpu = part_stat_lock();
 	part_stat_add(cpu, part0, ticks[rw], duration);
-	part_round_stats(cpu, part0);
-	part_dec_in_flight(part0, rw);
+	part_round_stats(bdev_get_queue(biow->bio->bi_bdev), cpu, part0);
+	part_dec_in_flight(bdev_get_queue(biow->bio->bi_bdev), part0, rw);
 	part_stat_unlock();
 
 	if (io_latency_threshold_ms_ > 0 && duration_ms > io_latency_threshold_ms_) {
